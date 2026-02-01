@@ -16,16 +16,17 @@ jobs:
       PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:${{ github.workspace }}/android-sdk/platform-tools:$PATH
 
     steps:
+      - name: Install core utilities (tar, unzip, wget)
+        run: |
+          sudo apt update
+          sudo apt install -y tar unzip wget git
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install system dependencies
         run: |
-          sudo apt update
-          sudo apt install -y \
-            python3-pip python3-dev \
-            openjdk-11-jdk \
-            zip unzip wget tar git \
+          sudo apt install -y python3-pip python3-dev openjdk-11-jdk \
             libncurses6 libstdc++6 libffi-dev libssl-dev
 
       - name: Set up Python
