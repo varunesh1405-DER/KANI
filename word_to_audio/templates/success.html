@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block body_attr %}data-page-enter-variant="zoom"{% endblock %}
+
+{% block title %}Success — DocuVoice{% endblock %}
+
+{% block content %}
+  <div id="c" class="success-card">
+    <div class="svg-wrap" aria-hidden="true">
+      <svg viewBox="0 0 120 120" width="120" height="120">
+        <circle class="check-circle" cx="60" cy="60" r="48"></circle>
+        <path class="check-path" d="M38 62 L54 78 L82 44"></path>
+      </svg>
+    </div>
+    <div class="message">{{ message or 'Saved' }}</div>
+    <div class="sub">Redirecting to home...</div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function(){
+    var delay = {{ (delay_ms | default(1500)) | tojson }};
+    var target = {{ (redirect_url | default('/') ) | tojson }};
+    document.getElementById('c').classList.add('show');
+    setTimeout(function(){ window.location.href = target; }, delay);
+  })();
+</script>
+{% endblock %}

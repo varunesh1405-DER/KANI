@@ -1,0 +1,17 @@
+venv
+output
+*.pyc
+__pycache__
+.git
+.gitignore
+.vscode
+.idea
+*.apk
+*.dist-info
+.Python
+.env
+.envrc
+.DS_Store
+build
+dist
+*.egg-info

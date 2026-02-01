@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block body_attr %}data-page-enter-variant="logo-stamp"{% endblock %}
+
+{% block title %}Home — DocuVoice{% endblock %}
+
+{% block content %}
+  <section class="hero container">
+    <h1>Welcome to DocuVoice</h1>
+    <div class="title-decor-wrap" aria-hidden="true">
+      <svg class="title-decor" width="320" height="36" viewBox="0 0 320 36" xmlns="http://www.w3.org/2000/svg" role="img">
+        <path d="M6 20 C60 8,120 32,180 20 C240 8,300 32,314 20" stroke="var(--accent-2)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.98"/>
+      </svg>
+    </div>
+    <p class="lead">Convert text or Word documents to audio, or save voice recordings — fast and simple.</p>
+  </section>
+
+  <div class="container">
+    <div class="grid">
+      <a class="card" href="{{ url_for('text_to_speech_page') }}">
+        <h3>Text to Speech</h3>
+        <div class="icon-wrap" aria-hidden="true">
+          <span class="icon" title="Text to Speech">
+            <!-- document + sound icon -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2v6h6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 12h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M9 16h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M17.5 12.5c1 .8 1 2.5 0 3.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="chip-label">Text — Speech</span>
+        </div>
+        <p>Type or paste text and download an MP3.</p>
+      </a>
+
+      <a class="card" href="{{ url_for('word_to_speech_page') }}">
+        <h3>Word to Speech</h3>
+        <div class="icon-wrap" aria-hidden="true">
+          <span class="icon" title="Word to Speech">
+            <!-- file doc icon -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2v6h6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 13h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M8 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="chip-label">Word — Speech</span>
+        </div>
+        <p>Upload a .docx document and convert it into audio.</p>
+      </a>
+
+      <a class="card" href="{{ url_for('voice_recording_page') }}">
+        <h3>Voice Recording</h3>
+        <div class="icon-wrap" aria-hidden="true">
+          <span class="icon" title="Voice Recording">
+            <!-- mic icon -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M12 1v11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M19 11a7 7 0 0 1-14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 19v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="chip-label">Voice — Record</span>
+        </div>
+        <p>Record from your browser and save the audio file.</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top:1.25rem">
+    <div class="local-ip-card card" style="display:flex;align-items:center;gap:1rem;padding:1rem;">
+      <div style="flex:1">
+        <strong>Local network address</strong>
+        <div id="local-ip-value" style="margin-top:0.35rem;color:var(--muted)">Not detected</div>
+      </div>
+      <div style="display:flex;gap:0.5rem;align-items:center">
+        <button id="fetch-local-ip" class="btn">Show Local IP</button>
+        <button id="copy-local-ip" class="btn" disabled>Copy URL</button>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    (function(){
+      const btn = document.getElementById('fetch-local-ip');
+      const copyBtn = document.getElementById('copy-local-ip');
+      const out = document.getElementById('local-ip-value');
+
+      function setDisabled(state){
+        copyBtn.disabled = state;
+      }
+
+      async function fetchIp(){
+        try{
+          const resp = await fetch('/local-ip', {cache: 'no-store'});
+          if(!resp.ok) throw new Error('Network');
+          const data = await resp.json();
+          const ip = data && data.ip ? data.ip : '127.0.0.1';
+          const port = window.location.port || '';
+          const protocol = window.location.protocol || 'http:';
+          const connectUrl = protocol + '//' + ip + (port ? (':' + port) : '');
+          out.textContent = connectUrl;
+          setDisabled(false);
+          copyBtn.dataset.url = connectUrl;
+        }catch(e){
+          out.textContent = 'Unable to detect local IP';
+          setDisabled(true);
+        }
+      }
+
+      btn && btn.addEventListener('click', function(){
+        out.textContent = 'Detecting...';
+        setDisabled(true);
+        fetchIp();
+      });
+
+      copyBtn && copyBtn.addEventListener('click', async function(){
+        const url = copyBtn.dataset.url;
+        if(!url) return;
+        try{
+          await navigator.clipboard.writeText(url);
+          copyBtn.textContent = 'Copied';
+          setTimeout(()=> copyBtn.textContent = 'Copy URL', 1800);
+        }catch(e){
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = url; document.body.appendChild(ta); ta.select();
+          try{ document.execCommand('copy'); copyBtn.textContent = 'Copied'; }catch(e){}
+          ta.remove();
+          setTimeout(()=> copyBtn.textContent = 'Copy URL', 1800);
+        }
+      });
+    })();
+  </script>
+{% endblock %}

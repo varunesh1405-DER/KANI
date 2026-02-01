@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}DocuVoice — Text & Audio{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    {% block head %}{% endblock %}
+  </head>
+  <body {% block body_attr %}{% endblock %}>
+    <div id="page-enter" class="page-enter" aria-hidden="true" data-variant="{{ page_enter_variant|default('fade') }}">
+      <div class="page-enter__inner">
+        <div class="logo-anim">
+          <!-- Inline SVG logo for maximum compatibility & animation control -->
+          <div class="logo-svg-wrap" aria-hidden="true">
+            <svg class="logo-svg" id="logo-inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="86" height="86" role="img" aria-hidden="true">
+              <g transform="translate(24,24)">
+                <path class="logo-path" d="M12 36 C12 24, 28 16, 48 16 C68 16, 84 28, 84 44 C84 60, 64 72, 48 72 C34 72, 20 66, 12 54" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+                <path class="logo-accent" d="M84 26 C90 34, 92 42, 92 44" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+              </g>
+            </svg>
+          </div>
+          <!-- Fallback text for assistive readers -->
+          <span class="logo-text">DocuVoice</span>
+        </div>
+      </div>
+    </div>
+    <header class="site-header">
+      <div class="inner">
+  <a class="brand" href="{{ url_for('home') }}">DocuVoice</a>
+        <nav class="main-nav">
+          <a href="{{ url_for('text_to_speech_page') }}">Text to Speech</a>
+          <a href="{{ url_for('word_to_speech_page') }}">Word to Speech</a>
+          <a href="{{ url_for('voice_recording_page') }}">Voice Recording</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <div class="container">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="inner">
+  <p>© {{ current_year }} DocuVoice — Built with Flask & gTTS</p>
+      </div>
+    </footer>
+
+    <script>
+      (function(){
+        const overlay = document.getElementById('page-enter');
+        if(!overlay) return;
+        // Respect reduced motion preference
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          overlay.style.display = 'none';
+          return;
+        }
+
+        // Animate on full page load
+        window.addEventListener('load', function(){
+          try{
+            // get current page path for per-page session tracking
+            const pagePath = window.location.pathname;
+            const SESSION_KEY = 'docuvoice_entry_' + (pagePath || 'home');
+
+            // allow forcing the entry animation with URL param (for debugging/testing)
+            const urlParams = new URLSearchParams(window.location.search);
+            const force = urlParams.get('entry') === '1' || urlParams.get('force_entry') === '1' || urlParams.get('showentry') === '1';
+            console.debug('DocuVoice entry: variant=', variant, 'force=', force);
+
+            // if we've already shown this page in this session, skip (unless forced)
+            if(!force && window.sessionStorage && window.sessionStorage.getItem(SESSION_KEY)){
+              overlay.style.display = 'none';
+              return;
+            }
+
+            // allow per-page override via overlay dataset or body data attribute
+            const bodyVar = document.body.getAttribute('data-page-enter-variant');
+            const variant = bodyVar || overlay.dataset.variant || 'fade';
+            overlay.classList.add(`page-enter--${variant}`);
+
+            // animate inline SVG stroke (better compatibility)
+            try{
+              const inlineSvg = document.getElementById('logo-inline');
+              if(inlineSvg){
+                const path = inlineSvg.querySelector('.logo-path');
+                if(path && typeof path.getTotalLength === 'function'){
+                  const length = path.getTotalLength();
+                  path.style.strokeDasharray = length;
+                  path.style.strokeDashoffset = length;
+                  // trigger stroke draw slightly after overlay animation starts
+                  setTimeout(()=>{ path.style.transition = 'stroke-dashoffset 900ms cubic-bezier(.2,.9,.2,1)'; path.style.strokeDashoffset = '0'; }, 200);
+                }
+              }
+            }catch(e){ }
+
+            // trigger animation on next frame (gives browser time to render)
+            setTimeout(()=> overlay.classList.add('page-enter--animate'), 50);
+
+            // hide overlay after the animation duration (use a solid timeout for reliability)
+            const animDuration = 1400; // matching overlay-hide keyframe + wipe-overlay
+            setTimeout(function(){
+              // mark this page so we don't show again in this session
+              try{ if(window.sessionStorage) window.sessionStorage.setItem(SESSION_KEY, '1'); }catch(e){}
+              overlay.classList.add('page-enter--hidden');
+              overlay.style.display = 'none';
+            }, animDuration);
+          }catch(err){
+            // On any error, don't block the page
+            overlay.style.display = 'none';
+          }
+        });
+      })();
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

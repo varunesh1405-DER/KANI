@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" role="img">
+  <!-- Circle + stylized 'D' sound wave -->
+  <circle cx="60" cy="60" r="48" fill="none" stroke="none" />
+  <g transform="translate(24,24)">
+    <path class="logo-path" d="M12 36 C12 24, 28 16, 48 16 C68 16, 84 28, 84 44 C84 60, 64 72, 48 72 C34 72, 20 66, 12 54" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+    <path class="logo-accent" d="M84 26 C90 34, 92 42, 92 44" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+  </g>
+</svg>

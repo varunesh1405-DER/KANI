@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block body_attr %}data-page-enter-variant="slide-up"{% endblock %}
+
+{% block title %}Text to Speech — DocuVoice{% endblock %}
+
+{% block content %}
+    <h1>Text to Speech</h1>
+        <div class="title-decor-wrap" aria-hidden="true">
+            <svg class="title-decor" width="220" height="28" viewBox="0 0 220 28" xmlns="http://www.w3.org/2000/svg" role="img">
+                <path d="M4 16 C40 6,80 26,120 16 C160 6,200 26,216 16" stroke="var(--accent-2)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+            </svg>
+        </div>
+    <p class="lead">Paste or type your text and convert it to an MP3.</p>
+
+    <form method="POST" action="/text-to-audio" class="form">
+        <textarea name="text" rows="10" placeholder="Enter your text here..."></textarea>
+        <div class="form-actions">
+            <button class="btn primary" type="submit">Convert to Speech</button>
+            <a class="btn" href="{{ url_for('home') }}">Back</a>
+        </div>
+    </form>
+{% endblock %}

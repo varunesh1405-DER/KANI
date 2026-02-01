@@ -1,0 +1,4 @@
+kivy==2.2.1
+requests==2.31.0
+android==0.14.0
+pyjnius==1.5.2

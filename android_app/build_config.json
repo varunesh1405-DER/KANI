@@ -1,0 +1,20 @@
+{
+  "app_name": "DocuVoice",
+  "version": "1.0.0",
+  "package": "org.docuvoice",
+  "build_date": "2026-02-01T13:15:20.778919",
+  "target_sdk": 31,
+  "min_sdk": 21,
+  "features": [
+    "Text to Speech",
+    "Word Document to Speech",
+    "Voice Recording",
+    "Cloud Backend Integration"
+  ],
+  "permissions": [
+    "INTERNET",
+    "RECORD_AUDIO",
+    "READ_EXTERNAL_STORAGE",
+    "WRITE_EXTERNAL_STORAGE"
+  ]
+}

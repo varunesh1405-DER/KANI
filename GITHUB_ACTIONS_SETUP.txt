@@ -1,0 +1,161 @@
+GITHUB ACTIONS APK BUILD SETUP
+===============================
+
+This guide sets up automatic APK building using GitHub Actions (free).
+
+
+STEP 1: Create GitHub Repository
+================================
+
+1. Go to: https://github.com/new
+2. Create a new repository:
+   - Name: KANI (or any name)
+   - Description: DocuVoice Android App
+   - Public or Private (your choice)
+   - DO NOT add README, .gitignore, or license yet
+3. Click "Create repository"
+
+
+STEP 2: Push Your Code to GitHub
+================================
+
+Open PowerShell in your project root:
+
+```powershell
+cd 'C:\Users\Varunesh\Desktop\New folder\KANI'
+
+# Initialize git
+git init
+git add .
+git commit -m "Initial commit: DocuVoice Android app"
+
+# Add remote (replace YOUR_USERNAME and YOUR_REPO)
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+
+# Push code
+git push -u origin main
+```
+
+The `.github/workflows/build-apk.yml` file will automatically be recognized.
+
+
+STEP 3: Trigger Build
+=====================
+
+**Option A: Automatic (Easiest)**
+- Just push code to `android_app/` folder
+- Workflow automatically triggers
+- Wait ~30 minutes for build
+
+**Option B: Manual Trigger**
+1. Go to your GitHub repo
+2. Click "Actions" tab
+3. Click "Build APK" workflow
+4. Click "Run workflow" → "Run workflow"
+5. Wait for build to complete
+
+
+STEP 4: Download APK
+====================
+
+1. Go to your GitHub repo
+2. Click "Actions" tab
+3. Click the completed workflow run
+4. Scroll down to "Artifacts"
+5. Click "docuvoice-apk" to download
+6. Extract ZIP file
+7. APK is ready to install!
+
+
+STEP 5: Create Release (Optional)
+=================================
+
+To create a tagged release with automatic APK upload:
+
+```powershell
+cd 'C:\Users\Varunesh\Desktop\New folder\KANI'
+
+# Create and push tag
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+APK will automatically upload to GitHub Releases page.
+
+
+TROUBLESHOOTING
+===============
+
+Build takes too long?
+  → First build can take 30-40 minutes
+  → Subsequent builds are faster (~10-15 min)
+
+Build fails?
+  → Check workflow logs in Actions tab
+  → Look for error message
+  → Common issues:
+    - Insufficient disk space (GitHub has 14GB)
+    - Missing dependencies
+    - Buildozer configuration issues
+
+APK not downloading?
+  → Check if build succeeded (green checkmark)
+  → Look in Artifacts section
+  → Wait a few seconds after build completes
+
+
+ADVANTAGES
+==========
+
+✓ No local setup required
+✓ Completely free (GitHub Actions free tier)
+✓ Runs in cloud (fast CPU)
+✓ Automatic on code push
+✓ No Docker needed
+✓ No complex configuration
+✓ Artifacts kept 30 days
+✓ Releases available forever
+
+
+TIPS
+====
+
+1. Keep .github/workflows/build-apk.yml in sync with this file
+
+2. Modify trigger events in build-apk.yml:
+   - `push:` - build on every push
+   - `workflow_dispatch:` - manual trigger
+   - Schedule builds: add `schedule:`
+
+3. To speed up builds:
+   - Only modify android_app/ folder
+   - Don't modify workflow file frequently
+
+4. For production releases:
+   - Use git tags for version control
+   - Let GitHub Actions create releases
+   - Download APK from Releases page
+
+
+NEXT STEPS
+==========
+
+1. Create GitHub account if you don't have one:
+   https://github.com/signup
+
+2. Create new repository:
+   https://github.com/new
+
+3. Push code following Step 2 above
+
+4. Workflow will start automatically
+
+5. Download APK from Actions artifacts in 30 minutes
+
+
+═══════════════════════════════════════════════════════════════
+
+Questions? Check GitHub Actions documentation:
+https://docs.github.com/en/actions
+

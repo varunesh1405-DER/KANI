@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block body_attr %}data-page-enter-variant="pulse"{% endblock %}
+
+{% block title %}Voice Recording — DocuVoice{% endblock %}
+
+{% block content %}
+  <h1>Voice Recording</h1>
+  <div class="title-decor-wrap" aria-hidden="true">
+    <svg class="title-decor" width="220" height="28" viewBox="0 0 220 28" xmlns="http://www.w3.org/2000/svg" role="img">
+      <path d="M4 16 C40 6,80 26,120 16 C160 6,200 26,216 16" stroke="var(--accent-2)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+    </svg>
+  </div>
+  <p class="lead">Record audio from your browser and save it to the server.</p>
+
+  <div class="controls">
+    <button id="startRecord" class="btn primary">Start Recording</button>
+    <button id="stopRecord" class="btn" disabled>Stop Recording</button>
+    <button id="playAudio" class="btn" disabled>Play</button>
+    <button id="saveAudio" class="btn" disabled>Save</button>
+  </div>
+
+  <div style="margin-top:18px">
+    <a class="btn" href="{{ url_for('home') }}">Back</a>
+  </div>
+
+  <audio id="audioPlayback" controls style="display:none;margin-top:14px;width:100%"></audio>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+console.log('Voice recording script loading...');
+
+function initVoiceRecorder() {
+  console.log('Initializing voice recorder...');
+  
+  const statusEl = document.createElement('div');
+  statusEl.id = 'recStatus';
+  statusEl.style.marginTop = '12px';
+  statusEl.style.color = 'var(--muted)';
+  statusEl.style.fontWeight = '600';
+  const controlsEl = document.querySelector('.controls');
+  if (controlsEl) {
+    controlsEl.after(statusEl);
+  }
+
+  let mediaRecorder;
+  let audioChunks = [];
+  let audioBlob;
+  let audioUrl;
+  let audioStream = null;
+  const audio = document.getElementById('audioPlayback');
+
+  const startRecordButton = document.getElementById("startRecord");
+  const stopRecordButton = document.getElementById("stopRecord");
+  const playAudioButton = document.getElementById("playAudio");
+  const saveAudioButton = document.getElementById("saveAudio");
+
+  if (!startRecordButton) {
+    console.error('Start record button not found!');
+    return;
+  }
+
+  function setStatus(msg, isError = false) {
+    console.log('Status:', msg);
+    statusEl.textContent = msg;
+    statusEl.style.color = isError ? '#b00020' : 'var(--muted)';
+  }
+
+  // Basic capability checks
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('Your browser does not support getUserMedia(). Try a modern Chrome/Edge/Firefox.', true);
+    if (startRecordButton) startRecordButton.disabled = true;
+    return;
+  }
+
+  // warn about insecure context
+  if (!window.isSecureContext && location.hostname !== 'localhost') {
+    setStatus('⚠️ Note: Recording from other devices requires HTTPS. Use localhost or enable HTTPS.', false);
+  } else {
+    setStatus('✓ Ready to record. Click "Start Recording" to begin.', false);
+  }
+
+  startRecordButton.addEventListener('click', async function (e) {
+    e.preventDefault();
+    console.log('Start record clicked');
+    try {
+      setStatus('🎤 Requesting microphone permission...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } });
+      audioStream = stream;
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = event => {
+        console.log('Data available:', event.data.size);
+        if (event.data && event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onerror = event => {
+        console.error('MediaRecorder error:', event);
+        setStatus('Recording error: ' + event.error, true);
+      };
+
+      mediaRecorder.onstop = () => {
+        console.log('Recording stopped, chunks:', audioChunks.length);
+        audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        audioUrl = URL.createObjectURL(audioBlob);
+        if (audio) {
+          audio.src = audioUrl;
+          audio.style.display = 'block';
+        }
+        if (playAudioButton) playAudioButton.disabled = false;
+        if (saveAudioButton) saveAudioButton.disabled = false;
+        setStatus('✓ Recording stopped. You can play or save the clip.', false);
+        
+        // Stop all tracks
+        if (audioStream) {
+          audioStream.getTracks().forEach(track => track.stop());
+        }
+      };
+
+      mediaRecorder.start();
+      if (startRecordButton) startRecordButton.disabled = true;
+      if (stopRecordButton) stopRecordButton.disabled = false;
+      setStatus('🔴 Recording... Click "Stop Recording" when finished.', false);
+    } catch (err) {
+      console.error('getUserMedia error:', err);
+      let msg = err && err.name ? err.name + ': ' + (err.message || '') : String(err);
+      console.error('Full error message:', msg);
+      
+      if (msg.includes('NotAllowedError') || msg.includes('Permission') || msg.includes('denied')) {
+        setStatus('❌ Microphone permission denied. Please allow microphone access in your browser settings and try again.', true);
+      } else if (msg.includes('NotFoundError')) {
+        setStatus('❌ No microphone found. Check your device has a microphone connected.', true);
+      } else if (msg.includes('SecureContext') || msg.includes('Only secure origins')) {
+        setStatus('❌ Insecure context: HTTPS required. Run on localhost or enable HTTPS.', true);
+      } else {
+        setStatus('❌ Error accessing microphone: ' + msg, true);
+      }
+    }
+  });
+
+  stopRecordButton.addEventListener('click', function (e) {
+    e.preventDefault();
+    console.log('Stop record clicked');
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      if (startRecordButton) startRecordButton.disabled = false;
+      if (stopRecordButton) stopRecordButton.disabled = true;
+    }
+  });
+
+  playAudioButton.addEventListener('click', function (e) {
+    e.preventDefault();
+    console.log('Play clicked');
+    if (audio) audio.play();
+  });
+
+  saveAudioButton.addEventListener('click', function (e) {
+    e.preventDefault();
+    console.log('Save clicked');
+    if (!audioBlob) {
+      setStatus('❌ No audio to save', true);
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', audioBlob, 'recording.wav');
+
+    setStatus('⏳ Uploading...', false);
+    fetch('/save-voice', { method: 'POST', body: formData })
+    .then(res => {
+      console.log('Save response:', res.status);
+      if (res.ok) {
+        setStatus('✓ Saved! Redirecting...', false);
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
+      } else {
+        res.text().then(t => setStatus('❌ Save failed: ' + t, true));
+      }
+    })
+    .catch(err => {
+      console.error('Save error:', err);
+      setStatus('❌ Error saving audio: ' + err, true);
+    });
+  });
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initVoiceRecorder);
+} else {
+  initVoiceRecorder();
+}
+
+console.log('Voice recording script loaded');
+</script>
+{% endblock %}

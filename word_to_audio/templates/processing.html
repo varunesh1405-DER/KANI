@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block body_attr %}data-page-enter-variant="wipe"{% endblock %}
+
+{% block title %}Processing — DocuVoice{% endblock %}
+
+{% block content %}
+  <div class="processing-card">
+    <h2>Converting document to audio</h2>
+    <p class="lead">Please wait while we convert your file. This may take a few seconds.</p>
+
+    <div class="progress-wrap">
+      <div class="ring" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="110" height="110">
+          <circle class="bg-ring" cx="60" cy="60" r="48"></circle>
+          <circle class="fg-ring" cx="60" cy="60" r="48" transform="rotate(-90 60 60)"></circle>
+        </svg>
+      </div>
+      <div class="progress-info">
+        <div class="percent" id="percent">0%</div>
+        <div class="details" id="message">Queued</div>
+        <div class="details" id="detail" style="margin-top:6px;font-size:13px;color:#9ca3af">0/0</div>
+      </div>
+    </div>
+
+    <p class="note">You will be redirected to the results page when conversion is complete.</p>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const jobId = {{ job_id|tojson }};
+  const pollUrl = '/job-status/' + jobId;
+  const fg = document.querySelector('.fg-ring');
+  const percentEl = document.getElementById('percent');
+  const messageEl = document.getElementById('message');
+  const detailEl = document.getElementById('detail');
+
+  function setProgress(p){
+    const max = 320;
+    const offset = Math.round(max - (p/100)*max);
+    fg.style.strokeDashoffset = offset;
+    percentEl.textContent = Math.round(p) + '%';
+  }
+
+  let last = 0;
+  function smoothTo(target){
+    const start = last || 0;
+    const duration = 300;
+    const t0 = performance.now();
+    function step(t){
+      const elapsed = t - t0;
+      const frac = Math.min(1, elapsed / duration);
+      const cur = start + (target - start) * frac;
+      setProgress(cur);
+      if(frac < 1){ requestAnimationFrame(step); }
+      else { last = target; }
+    }
+    requestAnimationFrame(step);
+  }
+
+  async function poll(){
+    try{
+      const res = await fetch(pollUrl, {cache:'no-store'});
+      let data = null;
+      try{ data = await res.json(); }catch(e){ data = null; }
+
+      if(!data){
+        messageEl.textContent = 'Waiting...';
+        setTimeout(poll, 800);
+        return;
+      }
+
+      const p = Number(data.progress) || 0;
+      const msg = data.message || '';
+      const detail = data.detail || '';
+      smoothTo(p);
+      messageEl.textContent = msg;
+      if(detail) detailEl.textContent = detail;
+
+      if(data.status === 'done'){
+        smoothTo(100);
+        setTimeout(function(){ window.location.href = '/success-redirect/' + jobId; }, 700);
+        return;
+      }
+
+      if(data.status === 'error'){
+        messageEl.textContent = data.message || 'Error during conversion';
+        return;
+      }
+
+      if(data.status === 'notfound'){
+        messageEl.textContent = 'Job not found. Redirecting...';
+        setTimeout(function(){ window.location.href = '/'; }, 1400);
+        return;
+      }
+
+    }catch(e){
+      messageEl.textContent = 'Waiting...';
+    }
+    setTimeout(poll, 600);
+  }
+
+  smoothTo(6);
+  setTimeout(poll, 500);
+</script>
+{% endblock %}

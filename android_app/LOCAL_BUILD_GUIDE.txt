@@ -1,0 +1,204 @@
+LOCAL BUILD SETUP GUIDE FOR WINDOWS
+====================================
+
+This guide helps you build the DocuVoice APK locally without Docker.
+
+OPTION 1: QUICKSTART (Easiest)
+==============================
+
+1. Double-click: build_local.bat
+   - Automatically checks/installs dependencies
+   - Runs buildozer build process
+   - Done!
+
+2. Wait 15-30 minutes for build to complete
+3. APK will be in: bin/docuvoice-*.apk
+
+
+OPTION 2: MANUAL SETUP (If quickstart fails)
+============================================
+
+Step 1: Install Java Development Kit (JDK)
+-------------------------------------------
+1. Download JDK 11+ from:
+   https://www.oracle.com/java/technologies/downloads/
+   
+2. Install and note installation path
+   Example: C:\Program Files\Java\jdk-11
+
+3. Set JAVA_HOME environment variable:
+   - Open: Settings → System → Advanced system settings
+   - Click: Environment Variables
+   - New System Variable:
+     Variable name: JAVA_HOME
+     Variable value: C:\Program Files\Java\jdk-11
+   
+4. Add to PATH:
+   - Edit PATH variable
+   - Add: %JAVA_HOME%\bin
+   
+5. Verify:
+   - Open Command Prompt
+   - Run: java -version
+   - Should show Java version
+
+
+Step 2: Install Python Dependencies
+------------------------------------
+1. Open Command Prompt
+2. Navigate to project directory:
+   cd C:\Users\Varunesh\Desktop\New folder\KANI\android_app
+
+3. Install buildozer and tools:
+   pip install buildozer cython kivy requests pyjnius
+
+4. Verify:
+   buildozer --version
+
+
+Step 3: Run Build
+-----------------
+1. Double-click: build_local.bat
+   OR
+   Run in Command Prompt:
+   buildozer android release
+
+2. First build will:
+   - Download Android SDK (~5GB)
+   - Download NDK (~2GB)
+   - Build APK (~15-30 minutes total)
+
+3. APK location: bin/docuvoice-*.apk
+
+
+EXPECTED DISK SPACE
+===================
+
+First time build:
+  - Android SDK:      ~5 GB
+  - Android NDK:      ~2 GB
+  - Build cache:      ~2 GB
+  - APK:              ~100 MB
+  ─────────────────
+  Total:              ~10 GB
+
+Subsequent builds: ~500 MB (much faster)
+
+
+TROUBLESHOOTING
+===============
+
+"java not found"
+  → Install JDK and set JAVA_HOME (see Step 1 above)
+
+"buildozer not found"
+  → Run: pip install buildozer
+
+"Build fails with PermissionError"
+  → Run Command Prompt as Administrator
+
+"Disk space issues"
+  → Need ~10GB free space
+  → SDK cache location: C:\Users\YourUsername\.buildozer\
+
+"Build takes too long"
+  → Normal! First build can take 20-40 minutes
+  → Subsequent builds are much faster (~5 minutes)
+
+"APK not generating"
+  → Check buildozer.spec configuration
+  → Review error messages in console
+  → Check that requirements.txt has all dependencies
+
+
+BUILD OPTIMIZATION
+==================
+
+Make builds faster after first build:
+
+1. Reuse Android SDK:
+   - First build downloads SDK
+   - Subsequent builds reuse it
+   
+2. Enable offline mode:
+   - Edit buildozer.spec
+   - Set: log_level = 2 (less verbose)
+
+3. Parallel compilation:
+   - Buildozer uses available CPU cores
+   - Close other applications during build
+
+
+PLATFORM-SPECIFIC NOTES
+=======================
+
+Windows 10/11:
+  ✓ Works with buildozer
+  ✓ Use build_local.bat script
+  ✓ Need ~10GB disk space
+  ✓ Build time: 20-30 min (first), 5 min (subsequent)
+
+Other systems:
+  Linux: Use build_local.sh
+  Mac: Use build_local.sh
+  WSL: Use build_local.sh
+
+
+ADVANCED: CUSTOM BUILD
+======================
+
+To customize the build, edit:
+  buildozer.spec
+
+Key settings:
+  [app]
+  package.name = docuvoice
+  package.domain = com.example
+  version = 1.0.0
+  requirements = python3,kivy,requests,...
+  
+  [buildozer]
+  log_level = 2
+  warn_on_root = 1
+
+
+NEXT STEPS AFTER BUILD
+======================
+
+1. Find APK: bin/docuvoice-*.apk
+
+2. Transfer to Android phone:
+   Option A: Email, cloud storage, USB cable
+   Option B: Using ADB:
+     adb install bin/docuvoice-1.0.0-release.apk
+
+3. Install on phone:
+   - Open file manager
+   - Tap APK file
+   - Allow installation from unknown sources
+   - Tap Install
+
+4. Grant permissions:
+   - Microphone (for recording)
+   - Storage (for file access)
+
+5. Configure backend:
+   - Open app
+   - Go to settings
+   - Enter Flask backend URL:
+     http://192.168.0.12:5000
+
+
+SUPPORT
+=======
+
+For more help:
+- Check buildozer documentation: https://buildozer.readthedocs.io/
+- Kivy framework docs: https://kivy.org/
+- This project's documentation files
+
+
+═══════════════════════════════════════════════════════════════════
+
+Ready to build locally? Just run: build_local.bat
+
