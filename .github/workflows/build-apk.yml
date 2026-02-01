@@ -10,6 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
+      ANDROID_HOME: ${{ github.workspace }}/android-sdk
+      PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:${{ github.workspace }}/android-sdk/platform-tools:${{ github.workspace }}/.buildozer/android/platform/apache-ant-1.9.4/bin:$PATH
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,40 +27,40 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y openjdk-17-jdk zip unzip wget git
+          sudo apt install -y openjdk-11-jdk zip unzip libncurses6 libstdc++6 libffi-dev libssl-dev git wget
 
-      - name: Install Buildozer & dependencies
+      - name: Install Buildozer and Python dependencies
         run: |
           pip install --upgrade pip
-          pip install buildozer cython kivy
+          pip install buildozer cython kivy requests pyjnius
 
-      - name: Install Android SDK command line tools
+      - name: Install Apache ANT
         run: |
-          mkdir -p "$HOME/android-sdk/cmdline-tools"
-          cd "$HOME/android-sdk/cmdline-tools"
-          # Download known available command line tools
-          wget "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip" -O tools.zip
-          unzip tools.zip
-          mkdir -p latest
-          mv cmdline-tools/* latest/
-      
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "PATH=$HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH" >> $GITHUB_ENV
-      
-          # Accept SDK licenses and install required packages
-          yes | sdkmanager --sdk_root=${HOME}/android-sdk --licenses
-          sdkmanager --sdk_root=${HOME}/android-sdk "platforms;android-33" "build-tools;33.0.2" "ndk;25.2.9519653" "platform-tools"
+          mkdir -p $HOME/.buildozer/android/platform
+          cd $HOME/.buildozer/android/platform
+          wget https://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.tar.gz
+          tar xzf apache-ant-1.9.4-bin.tar.gz
 
-      - name: Accept Android SDK licenses
+      - name: Install Android SDK cmdline-tools
         run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo "84831b9409646a918e30573bab4c9c91346d8abd" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
+          unzip tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
+          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools/* $ANDROID_SDK_ROOT/cmdline-tools/latest/
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+          yes | sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-31" "build-tools;31.0.0" "ndk;25.2.9519653"
+
+      - name: Accept Android licenses
+        run: |
+          mkdir -p ~/.android
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.android/repositories.cfg
 
       - name: Build APK
         working-directory: android_app
         run: |
-          buildozer android debug
+          buildozer android release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
