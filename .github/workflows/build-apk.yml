@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest   # <-- full VM with sudo, apt, tar, unzip
 
     env:
       ANDROID_HOME: ${{ github.workspace }}/android-sdk
@@ -16,25 +16,21 @@ jobs:
       PATH: ${{ github.workspace }}/android-sdk/cmdline-tools/latest/bin:${{ github.workspace }}/android-sdk/platform-tools:$PATH
 
     steps:
-      - name: Install core utilities (tar, unzip, wget)
-        run: |
-          sudo apt update
-          sudo apt install -y tar unzip wget git
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install system dependencies
         run: |
+          sudo apt update
           sudo apt install -y python3-pip python3-dev openjdk-11-jdk \
-            libncurses6 libstdc++6 libffi-dev libssl-dev
+            tar unzip wget git libncurses6 libstdc++6 libffi-dev libssl-dev
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Install Buildozer & dependencies
+      - name: Install Buildozer & Python dependencies
         run: |
           pip install --upgrade pip
           pip install buildozer cython kivy requests pyjnius
