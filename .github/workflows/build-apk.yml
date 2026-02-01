@@ -27,8 +27,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y openjdk-11-jdk zip unzip libncurses6 libstdc++6 libffi-dev libssl-dev git wget
-
+          sudo apt install -y openjdk-11-jdk zip unzip tar libncurses6 libstdc++6 libffi-dev libssl-dev git wget
       - name: Install Buildozer and Python dependencies
         run: |
           pip install --upgrade pip
