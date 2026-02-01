@@ -23,12 +23,13 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y \
-            openjdk-17-jdk \
+            openjdk-11-jdk \
             zip unzip \
-            libncurses5 \
+            libncurses6 \
             libstdc++6 \
             libffi-dev \
-            libssl-dev
+            libssl-dev \
+            git
 
       - name: Install Buildozer
         run: |
@@ -38,7 +39,7 @@ jobs:
       - name: Build APK
         working-directory: android_app
         run: |
-          buildozer android debug
+          buildozer android release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
