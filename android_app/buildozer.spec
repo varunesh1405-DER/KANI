@@ -1,36 +1,38 @@
 [app]
+# App name
 title = DocuVoice
 package.name = docuvoice
 package.domain = org.docuvoice
 
+# Source
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf
 
 version = 1.0.0
 
+# Requirements
 requirements = python3,kivy,requests,pyjnius
 
+# Screen orientation
 orientation = portrait
 fullscreen = 0
 
-android.permissions = INTERNET,RECORD_AUDIO,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,MICROPHONE
+# Permissions
+android.permissions = INTERNET,RECORD_AUDIO,MICROPHONE
 
 # Architecture
 android.archs = arm64-v8a
 
-# Api level
-android.api = 31
+# Android API levels
+android.api = 33
 android.minapi = 21
-android.ndk = 25b
-android.build_tools_version = 31.0.0
 
+# NDK & License
+android.ndk = 25.2.9519653
+android.accept_sdk_license = True
 
 # Bootstrap
 p4a.bootstrap = sdl2
-
-# App icon
-#android.icon = data/icon.png
-#android.presplash = data/presplash.png
 
 # Features
 android.features = android.hardware.microphone
@@ -38,8 +40,6 @@ android.features = android.hardware.microphone
 # Gradle dependencies
 android.gradle_dependencies = androidx.appcompat:appcompat:1.6.1
 
-# Java classes
-#android.add_src = 
-
+# Logging
 log_level = 2
 warn_on_root = 1
