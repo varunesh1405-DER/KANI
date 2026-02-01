@@ -23,22 +23,28 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y \
-            openjdk-17-jdk \
+            openjdk-11-jdk \
             zip unzip \
-            libncurses5 \
+            libncurses6 \
             libstdc++6 \
             libffi-dev \
-            libssl-dev
+            libssl-dev \
+            git
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython
+          pip install buildozer cython kivy
+
+      - name: Accept Android Licenses
+        run: |
+          mkdir -p ~/.android
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.android/repositories.cfg
 
       - name: Build APK
         working-directory: android_app
         run: |
-          buildozer android debug
+          buildozer android release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
